@@ -25,6 +25,7 @@ def delete_folder_yandex(url_disk: str, token: str, folder: str) -> int:
 
 
 def get_name_folder(url_disk: str, token: str, folder: str) -> str:
+    """Функция для получение имени папки"""
     headers = {'Authorization': token}
     params = {'path': folder}
     response = requests.get(url_disk, headers=headers, params=params)
