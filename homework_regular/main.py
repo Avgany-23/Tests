@@ -73,18 +73,14 @@ def write_file(path: str, names: list, phones: list, email: list, mode: str='w')
         for i in zip(names, phones, email):
             writer.writerow([*i[0], i[1], i[2]])
 
-# path = 'phonebook_raw.csv'  # Файл из условия
-# reader = read_file(path)
-# res_name = edin_name(reader)
-# print(res_name)
 
 # if __name__ == '__main__':
 #     path = 'phonebook_raw.csv'  # Файл из условия
 #     path_res = 'phones_result.csv'             # Файл для записи результата
 #     reader = read_file(path)                        # Считывания файла
-#
+
 #     res_name = edin_name(reader)                    # Получение готовых имён (без регулярок)
 #     res_number = edin_number_phone(reader)          # Получение готовых номеров
 #     res_email = search_email(reader)                # Получением email адресов
-#
+
 #     write_file(path_res, res_name[1:], res_number[1:], res_email[1:], mode='w')    # Запись в новый файл
