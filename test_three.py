@@ -31,7 +31,7 @@ def driver_settings():
     driver = Chrome(service=browser_service, options=options)
     driver.get('https://passport.yandex.ru/auth/list')
     return driver
-    
+
 
 @pytest.fixture(scope='module')
 def driver_():
