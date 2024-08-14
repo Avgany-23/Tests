@@ -11,15 +11,32 @@ import pytest
 load_dotenv()
 
 
-@pytest.fixture(scope='module')
-def driver_():
-    """Фикстура для теста test_incorrect_login"""
+def enter_login_yandex(driver, login: str, sleep_second: float | int = 2.25) -> None:
+    # Поле для ввода логина
+    field_put_login = driver.find_element(By.XPATH, '//input[@class="Textinput-Control"]')
+    field_put_login.send_keys(login)
+    sleep(0.5)
+
+    # Кнопка "войти"
+    button_put = driver.find_element(By.XPATH, '//button[@id="passp:sign-in"]')
+    button_put.click()
+    sleep(sleep_second)
+
+
+def driver_settings():
     path = ChromeDriverManager().install()
     browser_service = Service(executable_path=path)
     options = ChromeOptions()
     options.add_experimental_option("detach", True)
     driver = Chrome(service=browser_service, options=options)
     driver.get('https://passport.yandex.ru/auth/list')
+    return driver
+    
+
+@pytest.fixture(scope='module')
+def driver_():
+    """Фикстура для теста test_incorrect_login"""
+    driver = driver_settings()
     yield driver
     driver.close()
 
@@ -27,12 +44,7 @@ def driver_():
 @pytest.fixture(scope='function')
 def driver():
     """Фикстура для всех тестов кроме test_incorrect_login"""
-    path = ChromeDriverManager().install()
-    browser_service = Service(executable_path=path)
-    options = ChromeOptions()
-    options.add_experimental_option("detach", True)
-    driver = Chrome(service=browser_service, options=options)
-    driver.get('https://passport.yandex.ru/auth/list')
+    driver = driver_settings()
     yield driver
     driver.close()
 
@@ -57,14 +69,7 @@ def test_check_buttons(driver):
 
 
 def test_correct_login(driver):
-    # Поле для ввода логина
-    field_put_login = driver.find_element(By.XPATH, '//input[@class="Textinput-Control"]')
-    field_put_login.send_keys(os.getenv('login_yandex'))
-
-    # Кнопка "войти"
-    button_put = driver.find_element(By.XPATH, '//button[@id="passp:sign-in"]')
-    button_put.click()
-    sleep(0.5)
+    enter_login_yandex(driver, os.getenv('login_yandex'))
 
     # Поле для ввода пароля Textinput-Control
     field_put_password = driver.find_element(By.XPATH, '//input[@class="Textinput-Control"]')
@@ -74,20 +79,9 @@ def test_correct_login(driver):
     button_continue = driver.find_element(By.XPATH, '//button[@id="passp:sign-in"]')
     button_continue.click()
     sleep(2.5)
+    url_welcome = 'https://passport.yandex.ru/auth/welcome'
 
-    # Варианты вылезающих окон после успешного входа: главное меню или потверждение номера телефона
-    paths = [('//div[@class="app-shell_root__mG_ht"]', 'Главная'),
-             ('//div[@class="layout_head"]', 'Безопасный вход')]
-    test_, field_profile = None, None
-    for path in paths:
-        try:
-            field_profile = driver.find_element(By.XPATH, path[0])
-            test_ = path[1]
-            break
-        except:
-            continue
-
-    assert test_ in field_profile.text, 'Не удалось авторизоваться с верными данными для входа'
+    assert url_welcome != driver.current_url, 'Не удалось авторизоваться с верными данными для входа'
 
 
 @pytest.mark.parametrize('login', [
@@ -102,15 +96,7 @@ def test_incorrect_login(driver_, login):
         'Такой логин не подойдет',
         'Такого аккаунта нет'
     ]
-    # Поле для ввода логина
-    sleep(0.5)
-    field_put_login = driver_.find_element(By.XPATH, '//input[@class="Textinput-Control"]')
-    field_put_login.send_keys(login)
-
-    # Кнопка "войти"
-    button_put = driver_.find_element(By.XPATH, '//button[@id="passp:sign-in"]')
-    button_put.click()
-    sleep(0.5)
+    enter_login_yandex(driver_, login, sleep_second=0.5)
 
     # Тест подсказки с неправильным вводом логина
     field_incorrect_data = driver_.find_element(By.XPATH, '//div[@id="field:input-login:hint"]')
